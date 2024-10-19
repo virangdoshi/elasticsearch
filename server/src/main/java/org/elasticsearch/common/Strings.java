@@ -8,6 +8,7 @@
 
 package org.elasticsearch.common;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ExceptionsHelper;
@@ -47,7 +48,7 @@ public class Strings {
 
         try (BufferedReader reader = new BufferedReader(new StringReader(from))) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                 to.append(spaceChars).append(line).append('\n');
             }
         }
