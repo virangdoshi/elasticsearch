@@ -6,6 +6,8 @@
  */
 package org.elasticsearch.xpack.security.authc.esnative.tool;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.cli.Command;
 import org.elasticsearch.cli.CommandTestCase;
@@ -117,7 +119,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
             )
         ).thenReturn(httpResponse);
 
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         httpResponse = new HttpResponse(HttpURLConnection.HTTP_OK, Collections.singletonMap("status", randomFrom("yellow", "green")));
         when(
             httpClient.execute(
@@ -199,7 +201,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testAutoSetup() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         if (randomBoolean()) {
             execute("auto", "-b", "true");
         } else {
@@ -249,7 +251,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testAuthnFail() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         URL authnURL = authenticateUrl(url);
 
         HttpResponse httpResponse = new HttpResponse(HttpURLConnection.HTTP_UNAUTHORIZED, new HashMap<>());
@@ -274,7 +276,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testErrorMessagesWhenXPackIsNotAvailableOnNode() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         URL authnURL = authenticateUrl(url);
 
         HttpResponse httpResponse = new HttpResponse(HttpURLConnection.HTTP_NOT_FOUND, new HashMap<>());
@@ -318,7 +320,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testErrorMessagesWhenXPackIsAvailableWithCorrectLicenseAndIsEnabledButStillFailedForUnknown() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         URL authnURL = authenticateUrl(url);
 
         HttpResponse httpResponse = new HttpResponse(HttpURLConnection.HTTP_NOT_FOUND, new HashMap<>());
@@ -365,7 +367,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testErrorMessagesWhenXPackPluginIsAvailableButNoSecurityLicense() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         URL authnURL = authenticateUrl(url);
         URL xpackSecurityPluginQueryURL = queryXPackSecurityFeatureConfigURL(url);
 
@@ -411,7 +413,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testErrorMessagesWhenXPackPluginIsAvailableWithValidLicenseButDisabledSecurity() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         URL authnURL = authenticateUrl(url);
         URL xpackSecurityPluginQueryURL = queryXPackSecurityFeatureConfigURL(url);
 
@@ -456,7 +458,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testWrongServer() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         URL authnURL = authenticateUrl(url);
         doThrow(randomFrom(new IOException(), new SSLException(""))).when(httpClient)
             .execute(eq("GET"), eq(authnURL), eq(ElasticUser.NAME), any(SecureString.class), anyCheckedSupplier(), anyCheckedFunction());
@@ -471,7 +473,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
 
     public void testRedCluster() throws Exception {
         resetSecretsAndKeyStore("n");
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
 
         HttpResponse httpResponse = new HttpResponse(HttpURLConnection.HTTP_OK, new HashMap<>());
         when(
@@ -514,7 +516,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testUrlOption() throws Exception {
-        URL url = new URL("http://localhost:9202" + randomFrom("", "/", "//", "/smth", "//smth/", "//x//x/"));
+        URL url = Urls.create("http://localhost:9202" + randomFrom("", "/", "//", "/smth", "//smth/", "//x//x/"), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         execute("auto", "-u", url.toString(), "-b");
 
         InOrder inOrder = Mockito.inOrder(httpClient);
@@ -537,7 +539,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testSetUserPassFail() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         String userToFail = randomFrom(SetupPasswordTool.USERS);
         URL userToFailURL = passwordUrl(url, userToFail);
 
@@ -554,7 +556,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     public void testInteractiveSetup() throws Exception {
         resetSecretsAndKeyStore("Y");
 
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         execute("interactive");
 
         InOrder inOrder = Mockito.inOrder(httpClient);
@@ -581,7 +583,7 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     public void testInteractivePasswordsFatFingers() throws Exception {
-        URL url = new URL(httpClient.getDefaultURL());
+        URL url = Urls.create(httpClient.getDefaultURL(), Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
 
         terminal.reset();
         if (usedKeyStore.hasPassword()) {
@@ -649,19 +651,19 @@ public class SetupPasswordToolTests extends CommandTestCase {
     }
 
     private URL authenticateUrl(URL url) throws MalformedURLException, URISyntaxException {
-        return new URL(url, (url.toURI().getPath() + "/_security/_authenticate").replaceAll("/+", "/") + "?pretty");
+        return Urls.create(url, (url.toURI().getPath() + "/_security/_authenticate").replaceAll("/+", "/") + "?pretty", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
     }
 
     private URL passwordUrl(URL url, String user) throws MalformedURLException, URISyntaxException {
-        return new URL(url, (url.toURI().getPath() + "/_security/user/" + user + "/_password").replaceAll("/+", "/") + "?pretty");
+        return Urls.create(url, (url.toURI().getPath() + "/_security/user/" + user + "/_password").replaceAll("/+", "/") + "?pretty", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
     }
 
     private URL clusterHealthUrl(URL url) throws MalformedURLException, URISyntaxException {
-        return new URL(url, (url.toURI().getPath() + "/_cluster/health").replaceAll("/+", "/") + "?pretty");
+        return Urls.create(url, (url.toURI().getPath() + "/_cluster/health").replaceAll("/+", "/") + "?pretty", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
     }
 
     private URL queryXPackSecurityFeatureConfigURL(URL url) throws MalformedURLException, URISyntaxException {
-        return new URL(url, (url.toURI().getPath() + "/_xpack").replaceAll("/+", "/") + "?categories=features&human=false&pretty");
+        return Urls.create(url, (url.toURI().getPath() + "/_xpack").replaceAll("/+", "/") + "?categories=features&human=false&pretty", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
     }
 
     private HttpResponse createHttpResponse(final int httpStatus, final String responseJson) throws IOException {
