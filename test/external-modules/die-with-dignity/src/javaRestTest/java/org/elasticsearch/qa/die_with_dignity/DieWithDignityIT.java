@@ -8,6 +8,7 @@
 
 package org.elasticsearch.qa.die_with_dignity;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.lucene.util.Constants;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.core.PathUtils;
@@ -93,7 +94,7 @@ public class DieWithDignityIT extends ESRestTestCase {
             BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
         ) {
             String line;
-            while ((line = in.readLine()) != null) {
+            while ((line = BoundedLineReader.readLine(in, 5_000_000)) != null) {
                 pids.add(line);
             }
         }
@@ -109,7 +110,7 @@ public class DieWithDignityIT extends ESRestTestCase {
                 boolean isElasticsearch = false;
                 String jvmArgs = null;
                 String line;
-                while ((line = in.readLine()) != null) {
+                while ((line = BoundedLineReader.readLine(in, 5_000_000)) != null) {
                     if (line.equals("java_command: org.elasticsearch.server/org.elasticsearch.bootstrap.Elasticsearch")) {
                         isElasticsearch = true;
                     }

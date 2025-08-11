@@ -6,6 +6,7 @@
  */
 package org.elasticsearch.xpack.security.audit.logfile;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.layout.PatternLayout;
@@ -453,9 +454,9 @@ public class LoggingAuditTrailTests extends ESTestCase {
             )
         ) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                 // even number of lines
-                auditedRolesMap.put(line, reader.readLine());
+                auditedRolesMap.put(line, BoundedLineReader.readLine(reader, 5_000_000));
             }
         }
 
