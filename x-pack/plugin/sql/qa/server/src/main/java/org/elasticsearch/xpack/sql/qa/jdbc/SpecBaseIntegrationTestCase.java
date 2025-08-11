@@ -6,6 +6,7 @@
  */
 package org.elasticsearch.xpack.sql.qa.jdbc;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.ResponseException;
@@ -186,7 +187,7 @@ public abstract class SpecBaseIntegrationTestCase extends JdbcIntegrationTestCas
         try (BufferedReader reader = TestUtils.reader(source)) {
             String line;
             int lineNumber = 1;
-            while ((line = reader.readLine()) != null) {
+            while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                 line = line.trim();
                 // ignore comments
                 if (line.isEmpty() == false && line.startsWith("//") == false) {
